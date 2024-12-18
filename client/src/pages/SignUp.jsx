@@ -2,12 +2,16 @@ import React from 'react'
 import loginIMG from '../assets/img/loginImg.png'
 import googleIcon from '../assets/img/googleIcon.png'
 import { Eye } from 'lucide-react'
-import {Link} from 'react-router-dom'
+import { Link, useNavigate} from 'react-router-dom'
 import { useState } from 'react'
 
 export default function SignUp() {
 
-  const [formData, setFormData] = useState({})
+  const [formData, setFormData] = useState({});
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setFormData(
@@ -20,18 +24,32 @@ export default function SignUp() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const res = await fetch ('/api/auth/signup', 
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(formData),
+    try {
+      setLoading(true);
+      const res = await fetch ('/api/auth/signup', 
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(formData),
+        }
+      );
+  
+      const data = await res.json();
+      if (data.success === false){
+        setLoading(false);
+        setError(data.message);
+        return;
       }
-    );
+      setLoading(false);
+      setError(null);
+      navigate('/sign-in')
+    } catch (error) {
+      setLoading(false);
+      setError(error.message)
+    }
 
-    const data = await res.json();
-    console.log(data);
   }
 
   return (
@@ -48,7 +66,7 @@ export default function SignUp() {
               <input className="p-2 rounded-xl border w-full" type='password' name="password" id='password' placeholder="Password" onChange={handleChange}/>
               <Eye className='absolute top-1/2 right-3 -translate-y-1/2' size={18} />
             </div>
-            <button className='bg-[#14171A] text-white rounded-xl py-2'>Sign Up</button>
+            <button disabled={loading} className='bg-[#14171A] text-white rounded-xl py-2'>{loading ? "Loading..." : "Sign Up"}</button>
           </form>
 
           <div className='mt-10 grid grid-cols-3 items-center text-gray-500'>
@@ -69,6 +87,7 @@ export default function SignUp() {
             <button className='py-2 px-5 bg-white rounded-xl border'>Login</button>
             </Link>
           </div>
+          {error && <p className='text-red-400'>{error}</p>}
         </div>
 
         <div className='w-1/2 hidden md:block'>
