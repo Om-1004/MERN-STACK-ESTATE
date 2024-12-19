@@ -30,7 +30,7 @@ export const signin = async (req, res, next) => {
         const validPassword = bcryptjs.compareSync(password, validUser.password);
         
         if (!validPassword) {
-            return res.next(errorHandler(404, 'Invalid Password!'));
+            return res.next(errorHandler(401, 'Invalid Password!'));
         }
 
         const token = jwt.sign({ id: validUser._id }, process.env.JWT_SECRET);
