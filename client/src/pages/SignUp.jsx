@@ -1,9 +1,9 @@
 import React from 'react'
 import loginIMG from '../assets/img/loginImg.png'
-import googleIcon from '../assets/img/googleIcon.png'
 import { Eye } from 'lucide-react'
 import { Link, useNavigate} from 'react-router-dom'
 import { useState } from 'react'
+import OAuth from '../components/OAuth'
 
 export default function SignUp() {
 
@@ -75,16 +75,13 @@ export default function SignUp() {
             <hr className='border-gray-300' />
           </div>
 
-          <div className="relative">
-            <button className='bg-white border py-2 w-full rounded-xl mt-5 text-sm'>Login With Google</button>
-            <img className='absolute top-1/2 left-3 -translate-y-[3px] w-7' src={googleIcon} alt="" />
-          </div>
+          <OAuth />
 
           <p className='mt-5 text-xs border-b py-4'>Forgot Password</p>
           <div className="text-sm flex justify-between mt-3 items-center">
             <p>If you already have an account.. </p>
             <Link to="/sign-in" >
-            <button className='py-2 px-5 bg-white rounded-xl border'>Login</button>
+            <button className='py-2 px-5 bg-white rounded-xl border'>Sign In</button>
             </Link>
           </div>
           {error && <p className='text-red-400'>{error}</p>}
