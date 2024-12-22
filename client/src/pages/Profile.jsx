@@ -13,12 +13,15 @@ import {
   updateUserSuccess,
   updateUserStart,
   updateUserFailure,
+  deleteUserFailure,
+  deleteUserStart,
 } from "../redux/user/userSlice";
 
 export default function Profile() {
-  const { currentUser } = useSelector((state) => state.user);
+  const { currentUser, loading, error } = useSelector((state) => state.user);
   const dispatch = useDispatch();
   const [formData, setFormData] = useState({});
+  const [updateSuccess, setUpdateSuccess] = useState(false);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
@@ -46,11 +49,30 @@ export default function Profile() {
       dispatch(updateUserFailure(error.message));
     }
   };
+
+  const handleDeleteUser = async () => {
+    try {
+      dispatch(deleteUserStart());
+      const res = await fetch(`/api/user/delete/${currentUser._id}`, {
+        method: 'DELETE',
+      });
+    } catch (error) {
+      dispatch(deleteUserFailure(error.message));
+    }
+  }
+
   return (
     <div className="text-center mt-8 mx-auto sm:text-left sm:max-w-2xl">
       <h2 className="font-bold text-3xl sm:text-4xl text-gray-900 mb-6">
         Profile
       </h2>
+
+      {updateSuccess && (
+        <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg mb-6" role="alert">
+          <strong className="font-bold">Success!</strong>
+          <span className="block sm:inline"> Your profile has been updated successfully.</span>
+        </div>
+      )}
 
       <form onSubmit={handleSubmit}>
         <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 mb-8">
@@ -104,8 +126,11 @@ export default function Profile() {
           </div>
         </div>
 
-        <button className="block w-full sm:w-auto bg-blue-500 text-white text-lg font-medium py-2 px-5 rounded-lg hover:bg-blue-600 mb-10">
-          Update
+        <button
+          disabled={loading}
+          className="block w-full sm:w-auto bg-blue-500 text-white text-lg font-medium py-2 px-5 rounded-lg hover:bg-blue-600 mb-10"
+        >
+          {loading ? "Loading" : "Update"}
         </button>
       </form>
 
@@ -117,7 +142,7 @@ export default function Profile() {
         <div className="bg-red-100 p-4 rounded-lg flex items-center justify-center">
           <Trash2 size={24} />
         </div>
-        <p className="text-lg font-semibold text-gray-900">Delete Account</p>
+        <button onClick={handleDeleteUser} className="text-lg font-semibold text-gray-900 hover:underline">Delete Account</button>
       </div>
 
       <div className="flex flex-col sm:flex-row items-center sm:items-center gap-4 mb-8">
