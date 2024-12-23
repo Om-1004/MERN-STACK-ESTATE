@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   Camera,
   User,
@@ -7,6 +7,7 @@ import {
   Trash2,
   LogOut,
   Menu,
+  Check,
 } from "lucide-react";
 import { useSelector, useDispatch } from "react-redux";
 import {
@@ -18,6 +19,13 @@ import {
   signOutUserStart,
   signOutUserFailure,
 } from "../redux/user/userSlice";
+import {
+  getDownloadURL,
+  getStorage,
+  ref,
+  uploadBytesResumable,
+} from "firebase/storage";
+import { app } from "../firebase";
 
 export default function Profile() {
   const { currentUser, loading, error } = useSelector((state) => state.user);
@@ -25,7 +33,40 @@ export default function Profile() {
   const [formData, setFormData] = useState({});
   const [updateSuccess, setUpdateSuccess] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const fileRef = useRef(null);
+  const [file, setFile] = useState(undefined);
+  const [filePerc, setFilePerc] = useState(0);
+  const [fileUploadError, setFileUploadError] = useState(false);
+  useEffect(() => {
+    if (file) {
+      handleFileUpload(file);
+    }
+  }, [file]);
+  const handleFileUpload = (file) => {
+    const storage = getStorage(app);
+    const fileName = new Date().getTime() + file.name;
+    const storageRef = ref(storage, fileName);
+    const uploadTask = uploadBytesResumable(storageRef, file);
 
+    uploadTask.on(
+      "state_changed",
+      (snapshot) => {
+        const progress =
+          (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+        console.log("Upload is " + progress + "% done");
+        setFilePerc(Math.round(progress));
+      },
+      (error) => {
+        setFileUploadError(true);
+      },
+      () => {
+        getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) =>
+          setFormData({ ...formData, avatar: downloadURL })
+        );
+      }
+    );
+  };
+  console.log(formData);
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
   };
@@ -102,6 +143,45 @@ export default function Profile() {
       )}
 
       <form onSubmit={handleSubmit}>
+        <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 mb-8">
+          <div className="bg-blue-100 p-4 rounded-lg flex items-center justify-center">
+            <input
+              onChange={(e) => setFile(e.target.files[0])}
+              type="file"
+              ref={fileRef}
+              hidden
+              accept="image/*"
+            />
+            <img
+              onClick={() => fileRef.current.click()}
+              className="w-7 h-7 rounded-full object-cover cursor-pointer"
+              src={currentUser.avatar}
+            />
+          </div>
+          <div className="text-center  sm:text-left">
+            <p className="text-lg font-semibold">Photo</p>
+            <p className="text-sm text-gray-600 text-center sm:text-left">
+              Add a profile photo
+            </p>
+            <p>
+              {fileUploadError ? (
+                <span className="text-red-700">
+                  X
+                </span>
+              ) : filePerc > 0 && filePerc < 100 ? (
+                <span className="text-slate-700">{`Uploading ${filePerc}%`}</span>
+              ) : filePerc === 100 ? (
+                <span className="text-green-700">
+                  <Check />
+                </span>
+              ) : (
+                ""
+              )}
+            </p>
+          </div>
+        </div>
+
+
         <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 mb-8">
           <div className="bg-blue-100 p-4 rounded-lg flex items-center justify-center">
             <User size={24} />
