@@ -24,6 +24,7 @@ export default function Profile() {
   const dispatch = useDispatch();
   const [formData, setFormData] = useState({});
   const [updateSuccess, setUpdateSuccess] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
@@ -56,25 +57,30 @@ export default function Profile() {
     try {
       dispatch(deleteUserStart());
       const res = await fetch(`/api/user/delete/${currentUser._id}`, {
-        method: 'DELETE',
+        method: "DELETE",
       });
+      const data = await res.json();
+      if (data.success === false) {
+        dispatch(deleteUserFailure(data.message));
+        return;
+      }
     } catch (error) {
       dispatch(deleteUserFailure(error.message));
     }
-  }
+  };
 
   const handleSignOut = async () => {
     try {
       dispatch(signOutUserStart());
-      const res = await fetch('/api/auth/signout');
-      const data = res.json()
-      if (data.success  === false) {
+      const res = await fetch("/api/auth/signout");
+      const data = await res.json();
+      if (data.success === false) {
         dispatch(signOutUserFailure(data.message));
       }
     } catch (error) {
-      dispatch(signOutUserFailure(error.message))
+      dispatch(signOutUserFailure(error.message));
     }
-  }
+  };
 
   return (
     <div className="text-center mt-8 mx-auto sm:text-left sm:max-w-2xl">
@@ -83,9 +89,15 @@ export default function Profile() {
       </h2>
 
       {updateSuccess && (
-        <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg mb-6" role="alert">
+        <div
+          className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg mb-6"
+          role="alert"
+        >
           <strong className="font-bold">Success!</strong>
-          <span className="block sm:inline"> Your profile has been updated successfully.</span>
+          <span className="block sm:inline">
+            {" "}
+            Your profile has been updated successfully.
+          </span>
         </div>
       )}
 
@@ -157,14 +169,51 @@ export default function Profile() {
         <div className="bg-red-100 p-4 rounded-lg flex items-center justify-center">
           <Trash2 size={24} />
         </div>
-        <button onClick={handleDeleteUser} className="text-lg font-semibold text-gray-900 hover:underline">Delete Account</button>
+        <button
+          onClick={() => setShowDeleteModal(true)}
+          className="text-lg font-semibold text-gray-900 hover:underline"
+        >
+          Delete Account
+        </button>
       </div>
+
+      {showDeleteModal && (
+        <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg">
+            <h3 className="text-lg font-semibold mb-4">
+              Are you sure you want to delete your account?
+            </h3>
+            <div className="flex justify-end gap-4">
+              <button
+                onClick={() => setShowDeleteModal(false)}
+                className="bg-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-400"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  setShowDeleteModal(false);
+                  handleDeleteUser();
+                }}
+                className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600"
+              >
+                Yes, Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="flex flex-col sm:flex-row items-center sm:items-center gap-4 mb-8">
         <div className="bg-yellow-100 p-4 rounded-lg flex items-center justify-center">
           <LogOut size={24} />
         </div>
-        <button onClick={handleSignOut} className="text-lg font-semibold text-gray-900 hover:underline">Sign Out</button>
+        <button
+          onClick={handleSignOut}
+          className="text-lg font-semibold text-gray-900 hover:underline"
+        >
+          Sign Out
+        </button>
       </div>
 
       <div className="flex flex-col sm:flex-row items-center sm:items-center gap-4 mb-10">
