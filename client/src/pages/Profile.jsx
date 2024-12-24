@@ -26,7 +26,7 @@ import {
   uploadBytesResumable,
 } from "firebase/storage";
 import { app } from "../firebase";
-
+import { Link } from "react-router-dom";
 export default function Profile() {
   const { currentUser, loading, error } = useSelector((state) => state.user);
   const dispatch = useDispatch();
@@ -165,9 +165,7 @@ export default function Profile() {
             </p>
             <p>
               {fileUploadError ? (
-                <span className="text-red-700">
-                  X
-                </span>
+                <span className="text-red-700">X</span>
               ) : filePerc > 0 && filePerc < 100 ? (
                 <span className="text-slate-700">{`Uploading ${filePerc}%`}</span>
               ) : filePerc === 100 ? (
@@ -180,7 +178,6 @@ export default function Profile() {
             </p>
           </div>
         </div>
-
 
         <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 mb-8">
           <div className="bg-blue-100 p-4 rounded-lg flex items-center justify-center">
@@ -303,9 +300,11 @@ export default function Profile() {
         <p className="text-lg font-semibold text-gray-900">Show Listings</p>
       </div>
 
-      <button className="block w-full sm:w-96 bg-gray-200 text-gray-800 text-lg font-medium py-3 px-6 rounded-lg hover:bg-gray-300">
+      <Link to={"/create-listing"}>
+      <button className="block w-full sm:w-96 bg-gray-200 text-gray-800 text-lg mb-5 font-medium py-3 px-6 rounded-lg hover:bg-gray-300">
         Create New Listing
       </button>
+      </Link>
     </div>
   );
 }
