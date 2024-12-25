@@ -1,6 +1,114 @@
-import React from "react";
+import React, { useState } from "react";
+import {
+  getDownloadURL,
+  getStorage,
+  ref,
+  uploadBytesResumable,
+} from "firebase/storage";
+
+import { app } from "../firebase";
 
 export default function Listings() {
+  const [files, setFiles] = useState([]);
+  const [imageUploadError, setImageUploadError] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [uploading, setUploading] = useState(false);
+
+  const [formData, setFormData] = useState({
+    imageUrls: [],
+  });
+  //console.log(files);
+  console.log(formData);
+
+  const handleImageSubmit = (e) => {
+    if (files.length > 0 && files.length + formData.imageUrls.length < 7) {
+      setUploading(true);
+      setImageUploadError(false);
+      const promises = [];
+
+      for (let i = 0; i < files.length; i++) {
+        promises.push(storageImage(files[i]));
+      }
+      Promise.all(promises)
+        .then((urls) => {
+          setFormData({
+            ...formData,
+            imageUrls: formData.imageUrls.concat(urls),
+          });
+          setImageUploadError(false);
+          setUploading(false);
+        })
+
+        .catch((err) => {
+          setImageUploadError(
+            "Image upload failed (2 mb max per image upload)"
+          );
+        });
+    } else {
+      setImageUploadError("You can only upload 6 images per upload");
+      setUploading(false);
+    }
+  };
+
+  const storageImage = async (file) => {
+    return new Promise((resolve, reject) => {
+      const storage = getStorage(app);
+      const fileName = new Date().getTime() + file.name;
+      const storageRef = ref(storage, fileName);
+      const uploadTask = uploadBytesResumable(storageRef, file);
+
+      uploadTask.on(
+        "state_changed",
+        (snapshot) => {
+          const progress =
+            (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+          console.log(`Upload is ${progress}% done`);
+        },
+        (error) => {
+          reject(error);
+        },
+        () => {
+          getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+            resolve(downloadURL);
+          });
+        }
+      );
+    });
+  };
+
+  const handleRemoveImage = (index) => {
+    setFormData({
+      ...formData,
+      imageUrls: formData.imageUrls.filter((_, i) => i !== index),
+    });
+  };
+
+  const handleDragEnter = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+
+    const droppedFiles = Array.from(e.dataTransfer.files);
+    setFiles((prevFiles) => [...prevFiles, ...droppedFiles]);
+  };
+
+  const handleFileInputChange = (e) => {
+    const selectedFiles = Array.from(e.target.files);
+    setFiles((prevFiles) => [...prevFiles, ...selectedFiles]);
+  };
+
   return (
     <div className="max-w-3xl mx-auto text-center md:text-left mt-5">
       <h2 className="text-xl font-bold tracking-wide">Create a new listing</h2>
@@ -147,7 +255,16 @@ export default function Listings() {
             </div>
           </div>
         </div>
-        <div className="mb-5 border-2 border-dashed border-gray-300 p-6 rounded-lg flex flex-col items-center justify-center bg-gray-50">
+        <div
+          className={`mb-5 border-2 ${
+            isDragging ? "border-blue-500" : "border-dashed border-gray-300"
+          } p-6 rounded-lg flex flex-col items-center justify-center bg-gray-50`}
+          onDragEnter={handleDragEnter}
+          onDragOver={(e) => e.preventDefault()}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
+        >
+          {" "}
           <p className="text-gray-800 font-medium mb-4">
             Drag and drop your photos here
           </p>
@@ -159,14 +276,51 @@ export default function Listings() {
           </label>
           <input
             id="images"
+            onChange={(e) => setFiles(e.target.files)}
             type="file"
             multiple
             accept="images/*"
             className="hidden"
           />
+          <button
+            type="button"
+            disabled={uploading}
+            onClick={handleImageSubmit}
+            className="mt-5 px-4 py-2 bg-blue-500 text-white font-medium rounded-lg hover:bg-blue-600"
+          >
+            {uploading ? "Uploading..." : "Upload Images"}
+          </button>
+        </div>
+        {imageUploadError && (
+          <p className="text-red-600 text-sm mt-3 bg-red-100 border border-red-400 rounded-lg p-2 mb-5">
+            {imageUploadError}
+          </p>
+        )}
+        <div className="flex flex-wrap gap-4 mx-auto">
+          {formData.imageUrls.length > 0 &&
+            formData.imageUrls.map((url, index) => (
+              <div key={url} className="relative">
+                <button
+                  onClick={() => handleRemoveImage(index)}
+                  type="button"
+                  className="absolute top-1 right-1 bg-gray-400 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs hover:bg-red-700"
+                  title="Remove Image"
+                >
+                  &times;
+                </button>
+                <img
+                  src={url}
+                  alt="Listing Image"
+                  className="w-20 h-20 object-contain rounded-lg"
+                />
+              </div>
+            ))}
         </div>
 
-        <button className="mb-5 bg-[#2785e6] text-white py-2 px-3 w-1/2 rounded-full font-bold">
+        <button
+          onClick={handleImageSubmit}
+          className="mb-5 bg-[#2785e6] text-white py-2 px-3 w-1/2 rounded-full font-bold"
+        >
           Create Listing
         </button>
       </form>
