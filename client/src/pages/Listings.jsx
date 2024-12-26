@@ -7,15 +7,32 @@ import {
 } from "firebase/storage";
 
 import { app } from "../firebase";
-
+import { useSelector } from "react-redux";
+import {useNavigate} from 'react-router-dom'
 export default function Listings() {
   const [files, setFiles] = useState([]);
   const [imageUploadError, setImageUploadError] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const { currentUser } = useSelector((state) => state.user);
+
+  const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
     imageUrls: [],
+    name: "",
+    description: "",
+    address: "",
+    type: "rent",
+    bedrooms: 1,
+    bathrooms: 1,
+    regularPrice: 50,
+    discountPrice: 50,
+    offer: false,
+    parking: false,
+    furnished: false,
   });
   //console.log(files);
   console.log(formData);
@@ -104,16 +121,77 @@ export default function Listings() {
     setFiles((prevFiles) => [...prevFiles, ...droppedFiles]);
   };
 
-  const handleFileInputChange = (e) => {
-    const selectedFiles = Array.from(e.target.files);
-    setFiles((prevFiles) => [...prevFiles, ...selectedFiles]);
+  const handleChange = (e) => {
+    if (e.target.id === "sale" || e.target.id === "rent") {
+      setFormData({
+        ...formData,
+        type: e.target.id,
+      });
+    }
+
+    if (
+      e.target.id === "parking" ||
+      e.target.id === "furnished" ||
+      e.target.id === "offer"
+    ) {
+      setFormData({
+        ...formData,
+        [e.target.id]: e.target.checked,
+      });
+    }
+
+    if (
+      e.target.type === "number" ||
+      e.target.type === "text" ||
+      e.target.type === "textarea"
+    ) {
+      setFormData({
+        ...formData,
+        [e.target.id]: e.target.value,
+      });
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      if (formData.imageUrls.length < 1)
+        return setError("You must upload at least 1 image");
+      if (+formData.regularPrice < +formData.discountPrice)
+        return setError("Discounted Price must be lower than Regular Price");
+
+      setLoading(true);
+      setError(false);
+
+      const res = await fetch("/api/listing/create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          ...formData,
+          userRef: currentUser._id,
+        }),
+      });
+
+      const data = await res.json();
+
+      setLoading(false);
+      if (data.success === false) {
+        setError(data.message);
+      }
+      navigate(`/listing/${data._id}`)
+    } catch (error) {
+      setError(error.message);
+      setLoading(false);
+    }
   };
 
   return (
     <div className="max-w-3xl mx-auto text-center md:text-left mt-5">
       <h2 className="text-xl font-bold tracking-wide">Create a new listing</h2>
 
-      <form>
+      <form onSubmit={handleSubmit}>
         <p className="mt-7 text-sm sm:text-base ml-2 mb-2">Name</p>
         <input
           className="border w-44 sm:w-96 p-3 rounded-xl text-sm"
@@ -123,12 +201,16 @@ export default function Listings() {
           maxLength="62"
           minLength="10"
           required
+          onChange={handleChange}
+          value={formData.name}
         />
 
         <p className="mt-7 text-sm sm:text-base ml-2 mb-2">Description</p>
         <textarea
           className="border w-44 sm:w-96 h-32 p-3 rounded-xl text-sm"
           type="textarea"
+          onChange={handleChange}
+          value={formData.description}
           placeholder="e.g., This modern condo is perfect for a small family or couple. It has 2 bedrooms, 1 bathroom, and parking. The living room is spacious and bright due to the large windows. The kitchen is fully equipped with modern appliances."
           id="description"
         />
@@ -137,6 +219,8 @@ export default function Listings() {
         <input
           className="border w-44 sm:w-96 p-3 rounded-xl text-sm"
           type="text"
+          onChange={handleChange}
+          value={formData.address}
           placeholder="e.g. 123 Main St, Toronto, ON"
           id="address"
         />
@@ -144,6 +228,8 @@ export default function Listings() {
         <div className="border mt-5 w-3/4 mx-auto md:mx-0 rounded-md p-4 flex flex-col md:flex-row items-start md:items-center space-y-3 md:space-y-0 md:space-x-3">
           <input
             type="checkbox"
+            onChange={handleChange}
+            checked={formData.type === "sale"}
             className="form-radio h-5 w-5 text-blue-500 mt-1 md:mt-0 mx-auto md:mx-0"
             id="sale"
           />
@@ -159,8 +245,9 @@ export default function Listings() {
           <input
             type="checkbox"
             className="form-radio h-5 w-5 text-blue-500 mt-1 md:mt-0 mx-auto md:mx-0"
-            value="for-sale"
             id="rent"
+            onChange={handleChange}
+            checked={formData.type === "rent"}
           />
           <div className="mx-auto md:mx-0">
             <h4 className="text-sm font-medium text-gray-900">For rent</h4>
@@ -174,8 +261,9 @@ export default function Listings() {
           <input
             type="checkbox"
             className="form-radio h-5 w-5 text-blue-500 mt-1 md:mt-0 mx-auto md:mx-0"
-            value="for-sale"
             id="parking"
+            onChange={handleChange}
+            checked={formData.parking}
           />
           <div className="mx-auto md:mx-0">
             <h4 className="text-sm font-medium text-gray-900">Parking Spot</h4>
@@ -189,13 +277,29 @@ export default function Listings() {
           <input
             type="checkbox"
             className="form-radio h-5 w-5 text-blue-500 mt-1 md:mt-0 mx-auto md:mx-0"
-            value="for-sale"
             id="furnished"
+            onChange={handleChange}
+            checked={formData.furnished}
           />
           <div className="mx-auto md:mx-0">
             <h4 className="text-sm font-medium text-gray-900">Furnished</h4>
             <p className="text-sm text-gray-500">
               Select this if you want to include furniture
+            </p>
+          </div>
+        </div>
+        <div className="border mt-5 w-3/4 mx-auto md:mx-0 rounded-md p-4 flex flex-col md:flex-row items-start md:items-center space-y-3 md:space-y-0 md:space-x-3">
+          <input
+            type="checkbox"
+            className="form-radio h-5 w-5 text-blue-500 mt-1 md:mt-0 mx-auto md:mx-0"
+            id="offer"
+            onChange={handleChange}
+            checked={formData.offer}
+          />
+          <div className="mx-auto md:mx-0">
+            <h4 className="text-sm font-medium text-gray-900">Offer</h4>
+            <p className="text-sm text-gray-500">
+              Select this if you want to include an offer
             </p>
           </div>
         </div>
@@ -211,6 +315,8 @@ export default function Listings() {
                 min="1"
                 max="10"
                 required
+                onChange={handleChange}
+                value={formData.bedrooms}
               />
             </div>
 
@@ -223,6 +329,8 @@ export default function Listings() {
                 min="1"
                 max="10"
                 required
+                onChange={handleChange}
+                value={formData.bathrooms}
               />
             </div>
           </div>
@@ -238,19 +346,10 @@ export default function Listings() {
                 id="regularPrice"
                 required
                 placeholder="2000"
-              />
-            </div>
-
-            <div className="mt-7">
-              <h3 className="mb-2">
-                Discounted Price <span className="text-xs">($ / Month)</span>
-              </h3>
-              <input
-                type="number"
-                className="border w-[200px] rounded-md p-1"
-                id="discountPrice"
-                placeholder="1900"
-                required
+                onChange={handleChange}
+                value={formData.regularPrice}
+                min="50"
+                max="10000"
               />
             </div>
           </div>
@@ -318,12 +417,14 @@ export default function Listings() {
         </div>
 
         <button
+          // disabled={loading || uploading}
           onClick={handleImageSubmit}
           className="mb-5 bg-[#2785e6] text-white py-2 px-3 w-1/2 rounded-full font-bold"
         >
-          Create Listing
+          {loading ? "Creating..." : "Create Listing"}
         </button>
       </form>
+      {error && <p className="text-red-500 text-sm">{error}</p>}
     </div>
   );
 }
