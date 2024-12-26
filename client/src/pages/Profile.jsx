@@ -39,6 +39,8 @@ export default function Profile() {
   const [fileUploadError, setFileUploadError] = useState(false);
   const [showListingError, setShowListingError] = useState(false);
   const [userListings, setUserListings] = useState([]);
+  const [showListings, setShowListings] = useState(false);
+
   useEffect(() => {
     if (file) {
       handleFileUpload(file);
@@ -134,6 +136,7 @@ export default function Profile() {
         return;
       }
       setUserListings(data);
+      setShowListings(() => !showListings);
     } catch (error) {
       setShowListingError(true);
     }
@@ -311,11 +314,11 @@ export default function Profile() {
           type="button"
           className="text-lg font-semibold text-gray-900"
         >
-          Show Listings
+          {showListings ? "Hide Listings" : "Show Listings"}
         </button>
       </div>
 
-      {userListings && userListings.length > 0 && (
+      {showListings && userListings && userListings.length > 0 && (
         <div className="flex flex-col gap-6 mt-8">
           <h3 className="text-center text-2xl font-bold text-gray-800">
             Your Listings
