@@ -30,15 +30,11 @@ export const deleteListing = async (req, res, next) => {
   }
 };
 
-
 export const updateListing = async (req, res, next) => {
-  console.log("-----------------------?PARAMS-----------------------?");
-  console.log(req.params.id);
-  console.log("-----------------------?PARAMS-----------------------?");
-
-  // Validate the ID
   if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-    return next(errorHandler(400, "Listing not found or Invalid Listing ID format!"));
+    return next(
+      errorHandler(400, "Listing not found or Invalid Listing ID format!")
+    );
   }
 
   try {
@@ -55,11 +51,30 @@ export const updateListing = async (req, res, next) => {
     const updatedListing = await Listing.findByIdAndUpdate(
       req.params.id,
       req.body,
-      { new: true } 
+      { new: true }
     );
 
     res.status(200).json(updatedListing);
   } catch (error) {
-    next(error); 
+    next(error);
+  }
+};
+
+export const getListing = async (req, res, next) => {
+  if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+    return next(
+      errorHandler(400, "Listing not found or Invalid Listing ID format!")
+    );
+  }
+  try {
+    const listing = await Listing.findById(req.params.id);
+
+    if (!listing) {
+      return next(errorHandler(404, "Listing not found!"));
+    }
+
+    res.status(200).json(listing);
+  } catch (error) {
+    next(error);
   }
 };

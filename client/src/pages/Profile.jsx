@@ -149,17 +149,18 @@ export default function Profile() {
       });
 
       const data = await res.json();
-      if (data.success === false){
+      if (data.success === false) {
         console.log(data.message);
         return;
       }
 
-      setUserListings((prev) => prev.filter((listing) => listing._id !== listingID));
-
+      setUserListings((prev) =>
+        prev.filter((listing) => listing._id !== listingID)
+      );
     } catch (error) {
       console.log(error.message);
     }
-  }
+  };
 
   return (
     <div className="text-center mt-8 mx-auto sm:text-left sm:max-w-2xl">
@@ -363,12 +364,17 @@ export default function Profile() {
                     {listing.name}
                   </Link>
                   <div className="flex justify-between items-center">
-                    <button onClick={() => handleListingDelete(listing._id)} className="text-sm text-red-500 hover:underline">
+                    <button
+                      onClick={() => handleListingDelete(listing._id)}
+                      className="text-sm text-red-500 hover:underline"
+                    >
                       Delete
                     </button>
-                    <button className="text-sm text-blue-500 hover:underline">
-                      Edit
-                    </button>
+                    <Link to={`/update-listing/${listing._id}`}>
+                      <button className="text-sm text-blue-500 hover:underline">
+                        Edit
+                      </button>
+                    </Link>
                   </div>
                 </div>
               </div>
