@@ -8,7 +8,7 @@ import {
 
 import { app } from "../firebase";
 import { useSelector } from "react-redux";
-import {useNavigate} from 'react-router-dom'
+import { useNavigate } from "react-router-dom";
 export default function Listings() {
   const [files, setFiles] = useState([]);
   const [imageUploadError, setImageUploadError] = useState(false);
@@ -29,7 +29,7 @@ export default function Listings() {
     bedrooms: 1,
     bathrooms: 1,
     regularPrice: 50,
-    discountPrice: 50,
+    discountPrice: 0,
     offer: false,
     parking: false,
     furnished: false,
@@ -180,7 +180,7 @@ export default function Listings() {
       if (data.success === false) {
         setError(data.message);
       }
-      navigate(`/listing/${data._id}`)
+      navigate(`/listing/${data._id}`);
     } catch (error) {
       setError(error.message);
       setLoading(false);
@@ -352,6 +352,24 @@ export default function Listings() {
                 max="10000"
               />
             </div>
+            {formData.offer && (
+              <div className="mt-7">
+                <h3 className="mb-2">
+                  Discount Price <span className="text-xs">($ / Month)</span>
+                </h3>
+                <input
+                  type="number"
+                  className="border w-[200px] rounded-md p-1"
+                  id="discountPrice"
+                  required
+                  placeholder="2000"
+                  onChange={handleChange}
+                  value={formData.discountPrice}
+                  min="0"
+                  max="10000"
+                />
+              </div>
+            )}
           </div>
         </div>
         <div
