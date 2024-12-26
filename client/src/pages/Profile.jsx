@@ -142,6 +142,25 @@ export default function Profile() {
     }
   };
 
+  const handleListingDelete = async (listingID) => {
+    try {
+      const res = await fetch(`/api/listing/delete/${listingID}`, {
+        method: "DELETE",
+      });
+
+      const data = await res.json();
+      if (data.success === false){
+        console.log(data.message);
+        return;
+      }
+
+      setUserListings((prev) => prev.filter((listing) => listing._id !== listingID));
+
+    } catch (error) {
+      console.log(error.message);
+    }
+  }
+
   return (
     <div className="text-center mt-8 mx-auto sm:text-left sm:max-w-2xl">
       <h2 className="font-bold text-3xl sm:text-4xl text-gray-900 mb-6">
@@ -319,7 +338,7 @@ export default function Profile() {
       </div>
 
       {showListings && userListings && userListings.length > 0 && (
-        <div className="flex flex-col gap-6 mt-8">
+        <div className="flex flex-col w-1/2 mx-auto md:w-full gap-6 mt-8">
           <h3 className="text-center text-2xl font-bold text-gray-800">
             Your Listings
           </h3>
@@ -344,7 +363,7 @@ export default function Profile() {
                     {listing.name}
                   </Link>
                   <div className="flex justify-between items-center">
-                    <button className="text-sm text-red-500 hover:underline">
+                    <button onClick={() => handleListingDelete(listing._id)} className="text-sm text-red-500 hover:underline">
                       Delete
                     </button>
                     <button className="text-sm text-blue-500 hover:underline">
