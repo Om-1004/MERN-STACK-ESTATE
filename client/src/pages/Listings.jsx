@@ -67,6 +67,8 @@ export default function Listings() {
     }
   };
 
+  console.log(formData);
+
   const storageImage = async (file) => {
     return new Promise((resolve, reject) => {
       const storage = getStorage(app);
@@ -338,8 +340,12 @@ export default function Listings() {
           <div className="flex flex-col md:flex-row md:gap-12">
             <div className="mt-7">
               <h3 className="mb-2">
-                Regular Price <span className="text-xs">($ / Month)</span>
+                Regular Price
+                {formData.type === "rent" && (
+                  <span className="text-xs">($ / Month)</span>
+                )}
               </h3>
+
               <input
                 type="number"
                 className="border w-[200px] rounded-md p-1"
@@ -355,8 +361,12 @@ export default function Listings() {
             {formData.offer && (
               <div className="mt-7">
                 <h3 className="mb-2">
-                  Discount Price <span className="text-xs">($ / Month)</span>
+                  Discount Price
+                  {formData.type === "rent" && (
+                    <span className="text-xs">($ / Month)</span>
+                  )}
                 </h3>
+
                 <input
                   type="number"
                   className="border w-[200px] rounded-md p-1"

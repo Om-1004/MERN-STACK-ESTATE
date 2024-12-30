@@ -40,16 +40,15 @@ export default function EditListing() {
     const fetchListing = async () => {
       const listingID = params.listingID;
 
-      console.log(listingID)
+      console.log(listingID);
 
       const res = await fetch(`/api/listing/get/${listingID}`);
       const data = await res.json();
-      if (data.success === false){
+      if (data.success === false) {
         console.log(data.message);
         return;
       }
       setFormData(data);
-
     };
     fetchListing();
   }, []);
@@ -355,7 +354,10 @@ export default function EditListing() {
           <div className="flex flex-col md:flex-row md:gap-12">
             <div className="mt-7">
               <h3 className="mb-2">
-                Regular Price <span className="text-xs">($ / Month)</span>
+                Regular Price
+                {formData.type === "rent" && (
+                  <span className="text-xs">($ / Month)</span>
+                )}
               </h3>
               <input
                 type="number"
@@ -366,13 +368,16 @@ export default function EditListing() {
                 onChange={handleChange}
                 value={formData.regularPrice}
                 min="50"
-                max="10000"
+                max="10000000"
               />
             </div>
             {formData.offer && (
               <div className="mt-7">
                 <h3 className="mb-2">
-                  Discount Price <span className="text-xs">($ / Month)</span>
+                  Discount Price
+                  {formData.type === "rent" && (
+                    <span className="text-xs">($ / Month)</span>
+                  )}
                 </h3>
                 <input
                   type="number"
