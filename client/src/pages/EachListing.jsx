@@ -115,7 +115,7 @@ export default function EachListing() {
 
               {listing.offer && (
                 <p className="text-center bg-green-600 w-[120px] px-4 py-2 rounded-xl font-bold text-white hover:bg-green-700 transition-all duration-300 ease-in-out">
-                  ${+listing.regularPrice - +listing.discountPrice}
+                  ${+listing.regularPrice - +listing.discountPrice} OFF
                 </p>
               )}
             </div>
