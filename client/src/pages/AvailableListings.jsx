@@ -20,7 +20,7 @@ export default function AvailableListings() {
   });
   const [loading, setLoading] = useState(false);
   const [listings, setListings] = useState([]);
-  console.log(listings);
+  const [showMore, setShowMore] = useState(false);
 
   useEffect(() => {
     const urlParams = new URLSearchParams(location.search);
@@ -54,9 +54,15 @@ export default function AvailableListings() {
 
     const fetchListings = async () => {
       setLoading(true);
+      setShowMore(false)
       const searchQuery = urlParams.toString();
       const res = await fetch(`/api/listing/get?${searchQuery}`);
       const data = await res.json();
+      if (data.length > 8) {
+        setShowMore(true);
+      } else {
+        setShowMore(false)
+      }
       setListings(data);
       setLoading(false);
     };
@@ -92,16 +98,6 @@ export default function AvailableListings() {
     }
   };
 
-  // useEffect(() => {
-  //   const urlParams = new URLSearchParams(location.search);
-  //   const searchTerm = urlParams.get("searchTerm");
-  //   if (searchTerm) setSearchField(searchTerm);
-  // }, [location.search]);
-
-  // const handleSortChange = (option) => {
-  //   setSortOption(option); // Update selected sort option
-  // };
-
   const handleSubmit = (e) => {
     e.preventDefault();
 
@@ -118,13 +114,26 @@ export default function AvailableListings() {
     navigate(`/search?${searchQuery}`);
   };
 
+  const handleShowMore = async () => {
+    const numberOfListings = listings.length;
+    const startIndex = numberOfListings;
+    const urlParams = new URLSearchParams(location.search);
+    urlParams.set("startIndex", startIndex);
+    const searchQuery = urlParams.toString();
+    const res = await fetch(`/api/listing/get?${searchQuery}`);
+    const data = await res.json();
+    if (data.length < 9) {
+      setShowMore(false);
+    }
+    setListings([...listings, ...data]);
+  };
   return (
     <form onSubmit={handleSubmit}>
       <div className="flex flex-col md:flex-row  max-w-7xl gap-10 mx-auto">
         {/* Left Part */}
 
         <div className="border mt-5 p-2 rounded-lg w-full md:w-1/3 mx-auto md:mx-0">
-          <div className="flex gap-4 w-[280px] bg-[#e7edf2] p-2 rounded-lg mx-auto md:mx-0">
+          <div className="flex gap-4 w-100px md:w-[280px] bg-[#e7edf2] p-2 rounded-lg mx-auto md:mx-0">
             <Search />
             <input
               type="text"
@@ -259,6 +268,16 @@ export default function AvailableListings() {
               listings.map((listing) => (
                 <ListingCard key={listing._id} listing={listing} />
               ))}
+
+            {showMore && (
+              <button
+              type="button"
+                className="text-blue-700 hover:underline p-7"
+                onClick={handleShowMore}
+              >
+                Show More
+              </button>
+            )}
           </div>
         </div>
       </div>
