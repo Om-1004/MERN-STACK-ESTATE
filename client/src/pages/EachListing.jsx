@@ -6,6 +6,7 @@ import { useSelector } from "react-redux";
 import { Navigation } from "swiper/modules";
 import "swiper/css/bundle";
 import { Share2, MapPin, Bath, Bed, Car, Armchair } from "lucide-react";
+import Contact from "../components/Contact";
 
 export default function EachListing() {
   SwiperCore.use([Navigation]);
@@ -13,6 +14,8 @@ export default function EachListing() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
   const [copied, setCopied] = useState(false);
+  const { currentUser } = useSelector((state) => state.user);
+  const [contact, setContact] = useState(false);
 
   const params = useParams();
 
@@ -45,7 +48,6 @@ export default function EachListing() {
     <main>
       {listing && !loading && !error && (
         <div className="container mt-8 mx-auto md:max-w-7xl rounded-2xl shadow-lg bg-white">
-          {/* Image Slider */}
           <Swiper
             navigation
             loop
@@ -66,7 +68,6 @@ export default function EachListing() {
             ))}
           </Swiper>
 
-          {/* Share Button */}
           <div className="relative z-20">
             <div
               className="absolute w-14 h-14 top-4 right-4 flex items-center justify-center bg-white shadow-md hover:shadow-lg border border-gray-300 rounded-full transition-all duration-300 ease-in-out"
@@ -83,7 +84,6 @@ export default function EachListing() {
               />
             </div>
 
-            {/* Copied Notification */}
             {copied && (
               <p
                 className="absolute top-[5.5rem] right-0 w-max bg-green-100 shadow-md border border-green-300 rounded-lg px-4 py-2 text-sm text-gray-700"
@@ -94,7 +94,6 @@ export default function EachListing() {
             )}
           </div>
 
-          {/* Listing Details */}
           <div className="flex flex-col max-w-5xl mx-auto p-6 my-8 gap-6 bg-gray-50 rounded-lg shadow-sm">
             <p className="text-3xl font-semibold text-gray-800">
               {listing.name}
@@ -121,7 +120,7 @@ export default function EachListing() {
               )}
             </div>
 
-            <div className="flex flex col md:flex-row items-center gap-2">
+            <div className="flex col md:flex-row items-center gap-2">
               <MapPin className="text-green-600" />
               <p>{listing.address}</p>
             </div>
@@ -155,6 +154,15 @@ export default function EachListing() {
                 <div>{listing.furnished ? "Furnished" : "Not Furnished"}</div>
               </li>
             </ul>
+            {currentUser && listing.userRef !== currentUser._id && !contact && (
+              <button
+                onClick={() => setContact(true)}
+                className="bg-slate-700 text-white rounded-lg uppercase hover:opacity-95 p-3"
+              >
+                Contact landlord
+              </button>
+            )}
+            {contact && <Contact listing={listing}/>}
           </div>
         </div>
       )}

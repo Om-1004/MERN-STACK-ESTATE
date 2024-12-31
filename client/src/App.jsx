@@ -23,7 +23,6 @@ export default function App() {
           <Route path="/profile" element={<Profile />} />
           <Route path="/create-listing" element={<Listings />} />
           <Route path="/update-listing/:listingID" element={<EditListing />} />
-
         </Route>
       </Routes>
     </BrowserRouter>
