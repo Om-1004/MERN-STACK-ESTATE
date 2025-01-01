@@ -54,14 +54,14 @@ export default function AvailableListings() {
 
     const fetchListings = async () => {
       setLoading(true);
-      setShowMore(false)
+      setShowMore(false);
       const searchQuery = urlParams.toString();
       const res = await fetch(`/api/listing/get?${searchQuery}`);
       const data = await res.json();
       if (data.length > 8) {
         setShowMore(true);
       } else {
-        setShowMore(false)
+        setShowMore(false);
       }
       setListings(data);
       setLoading(false);
@@ -129,10 +129,10 @@ export default function AvailableListings() {
   };
   return (
     <form onSubmit={handleSubmit}>
-      <div className="flex flex-col md:flex-row  max-w-7xl gap-10 mx-auto">
+      <div className="flex flex-col md:flex-row gap-10 mx-auto max-w-screen-2xl">
         {/* Left Part */}
 
-        <div className="border mt-5 p-2 rounded-lg w-full md:w-1/3 mx-auto md:mx-0">
+        <div className="mt-5 p-2 rounded-lg w-full md:w-1/3 mx-auto md:mx-0">
           <div className="flex gap-4 w-100px md:w-[280px] bg-[#e7edf2] p-2 rounded-lg mx-auto md:mx-0">
             <Search />
             <input
@@ -268,17 +268,17 @@ export default function AvailableListings() {
               listings.map((listing) => (
                 <ListingCard key={listing._id} listing={listing} />
               ))}
-
-            {showMore && (
-              <button
-              type="button"
-                className="text-blue-700 hover:underline p-7"
-                onClick={handleShowMore}
-              >
-                Show More
-              </button>
-            )}
           </div>
+
+          {showMore && (
+            <button
+              type="button"
+              className="text-blue-700 hover:underline p-7"
+              onClick={handleShowMore}
+            >
+              Show More
+            </button>
+          )}
         </div>
       </div>
     </form>

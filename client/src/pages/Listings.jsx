@@ -158,13 +158,11 @@ export default function Listings() {
     e.preventDefault();
     try {
       if (formData.imageUrls.length < 1)
-        return setError("You must upload at least 1 image");
+        return setError("You must upload at least one image");
       if (+formData.regularPrice < +formData.discountPrice)
-        return setError("Discounted Price must be lower than Regular Price");
-
+        return setError("Discount price must be lower than regular price");
       setLoading(true);
       setError(false);
-
       const res = await fetch("/api/listing/create", {
         method: "POST",
         headers: {
@@ -175,9 +173,7 @@ export default function Listings() {
           userRef: currentUser._id,
         }),
       });
-
       const data = await res.json();
-
       setLoading(false);
       if (data.success === false) {
         setError(data.message);

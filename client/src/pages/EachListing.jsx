@@ -154,6 +154,12 @@ export default function EachListing() {
                 <div>{listing.furnished ? "Furnished" : "Not Furnished"}</div>
               </li>
             </ul>
+
+            <p className="text-slate-800">
+              <span className="font-semibold text-black">Description - </span>
+              {listing.description}
+            </p>
+            
             {currentUser && listing.userRef !== currentUser._id && !contact && (
               <button
                 onClick={() => setContact(true)}
