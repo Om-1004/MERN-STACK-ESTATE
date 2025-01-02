@@ -368,7 +368,6 @@ export default function EditListing() {
                 onChange={handleChange}
                 value={formData.regularPrice}
                 min="50"
-                max="10000000"
               />
             </div>
             {formData.offer && (

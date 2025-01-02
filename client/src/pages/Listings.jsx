@@ -351,7 +351,7 @@ export default function Listings() {
                 onChange={handleChange}
                 value={formData.regularPrice}
                 min="50"
-                max="10000"
+      
               />
             </div>
             {formData.offer && (
